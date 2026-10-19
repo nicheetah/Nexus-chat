@@ -1,0 +1,1405 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#080c10">
+<meta name="description" content="NEXUS CHAT - private chat, calls, voice notes and short videos">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="icon-192.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="NEXUS">
+<title>NEXUS CHAT</title>
+<style>
+:root{--bg:#080c10;--panel:#0e1419;--card:#131920;--line:#24313b;--cyan:#00d4ff;--blue:#2585ff;--text:#eaf4fa;--muted:#91a3b1;--green:#00e5a0;--danger:#ff647c;--mine:#073746}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font:15px/1.45 Inter,Segoe UI,Arial,sans-serif;min-height:100vh}
+button,input,textarea{font:inherit}
+button{cursor:pointer;border:0;border-radius:10px;padding:11px 15px;background:var(--cyan);color:#041116;font-weight:750}
+button.secondary{background:#1a2630;color:var(--text);border:1px solid var(--line)}
+button.icon{background:#1a2630;color:var(--text);border:1px solid var(--line);padding:0;width:42px;height:42px;border-radius:50%;font-size:18px;flex-shrink:0;display:grid;place-items:center}
+button.danger{background:var(--danger);color:#fff}
+button:disabled{opacity:.5;cursor:not-allowed}
+.top{height:60px;border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;padding:0 20px;background:#0b1116;position:sticky;top:0;z-index:5;gap:12px}
+.brand{font-weight:900;letter-spacing:2px;font-size:20px}.brand span{color:var(--cyan)}
+.status{font-size:12px;color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.topright{display:flex;align-items:center;gap:12px;min-width:0}
+.wrap{max-width:1280px;margin:14px auto;padding:0 12px}
+.auth{max-width:460px;margin:6vh auto;background:var(--panel);border:1px solid var(--line);padding:28px;border-radius:20px;box-shadow:0 20px 70px #0008}
+.auth h1{margin:0 0 6px}.muted{color:var(--muted)}
+.field{display:flex;flex-direction:column;gap:6px;margin:13px 0}.field label{font-size:13px;color:#b8c8d3}
+.field input,.field textarea,.search{width:100%;padding:12px 13px;background:#080e13;border:1px solid var(--line);border-radius:10px;color:var(--text);outline:none}
+.field input:focus,.field textarea:focus,.search:focus{border-color:var(--cyan)}
+.row{display:flex;gap:10px}.row>*{flex:1;min-width:0}
+.wide{width:100%;margin-top:8px}
+.error{color:#ff8293;font-size:13px;min-height:20px;margin-top:8px}.info{color:var(--green)}
+.switch{text-align:center;margin-top:17px;font-size:13px}
+.link{background:none;color:var(--cyan);padding:0}
+.hide{display:none!important}
+.note{font-size:12px;color:var(--muted);margin:10px 2px}.pad{padding:14px 18px}
+
+.pw{position:relative}.pw input{padding-right:48px}
+.pwtoggle{position:absolute;right:4px;top:4px;background:none!important;border:0!important;color:var(--muted);padding:8px 10px}
+.hint{font-size:12px;color:var(--muted)}
+/* layout */
+.app{display:grid;grid-template-columns:340px 1fr;height:calc(100dvh - 120px);min-height:480px;border:1px solid var(--line);border-radius:18px;overflow:hidden;background:var(--panel)}
+.side{border-right:1px solid var(--line);min-width:0;min-height:0;display:flex;flex-direction:column}
+.sidehead{padding:14px 16px;border-bottom:1px solid var(--line);display:flex;flex-direction:column;gap:10px}
+.me-row{display:flex;align-items:center;gap:12px}.me-row .grow{flex:1;min-width:0}
+.tabs{display:flex;gap:6px}.tabs button{flex:1;padding:8px 6px;background:#1a2630;color:var(--muted);border:1px solid var(--line);font-size:13px}
+.tabs button.active{background:var(--cyan);color:#041116;border-color:var(--cyan)}
+.list{flex:1;overflow:auto;min-height:0}
+.avatar{position:relative;width:42px;height:42px;flex-shrink:0;border-radius:50%;display:grid;place-items:center;background:linear-gradient(135deg,#00d4ff,#2585ff);color:#041116;font-weight:900}
+.avatar img{width:100%;height:100%;object-fit:cover;border-radius:50%}
+.avatar.on::after{content:"";position:absolute;right:0;bottom:0;width:12px;height:12px;border-radius:50%;background:var(--green);border:2px solid var(--panel)}
+.clickable{cursor:pointer}
+.contact{display:flex;gap:12px;align-items:center;padding:12px 16px;border-bottom:1px solid #1c2730;cursor:pointer}
+.contact:hover,.contact.active{background:#14232c}
+.contact .body{flex:1;min-width:0}
+.contact .line1{display:flex;justify-content:space-between;gap:8px}
+.contact-name{font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.contact-sub{font-size:12px;color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.time{font-size:11px;color:var(--muted);flex-shrink:0}
+.unread{background:var(--green);color:#03130d;border-radius:20px;min-width:20px;height:20px;padding:0 6px;font-size:12px;font-weight:800;display:grid;place-items:center}
+.sect{padding:10px 16px 4px;font-size:11px;letter-spacing:1px;color:var(--muted);text-transform:uppercase}
+.chat,.shorts{min-width:0;min-height:0}
+.chat{display:flex;flex-direction:column;position:relative}
+.chathead{padding:12px 16px;border-bottom:1px solid var(--line);display:flex;align-items:center;gap:12px}
+.chathead h3{margin:0;font-size:16px}.chathead .info-col{flex:1;min-width:0}
+.back{display:none}
+.green{color:var(--green)}
+.messages{flex:1;min-height:0;padding:18px;overflow:auto;display:flex;flex-direction:column;gap:6px}
+.empty{margin:auto;text-align:center;color:var(--muted);max-width:320px}
+.msg{display:flex;flex-direction:column;align-items:flex-start;position:relative}.msg.mine{align-items:flex-end}
+.bubble{position:relative;max-width:min(78%,520px);padding:8px 12px;border-radius:15px;background:#1a2630;border:1px solid #2a3944;overflow-wrap:anywhere;white-space:pre-wrap}
+.msg.mine .bubble,.bubble.mine{background:var(--mine);border-color:#07566b}
+.bubble.sticker{background:none;border:0;padding:0;font-size:64px;line-height:1.1}
+.bubble.sticker img{width:150px;height:150px;object-fit:contain}
+.bubble.deleted{opacity:.6;font-style:italic}
+.bubble img.media,.bubble video.media{display:block;max-width:100%;max-height:340px;border-radius:10px;cursor:pointer;background:#000;min-width:140px;min-height:80px}
+.meta{font-size:10px;color:#a9bbc7;margin-top:3px;display:flex;gap:6px;justify-content:flex-end;align-items:center;white-space:nowrap}
+.tick{font-size:11px;letter-spacing:-2px}.tick.read{color:var(--cyan)}.tick.dlv{color:#a9bbc7}
+.more{position:absolute;top:2px;right:4px;background:none;color:var(--muted);padding:0 4px;font-size:16px;opacity:0;line-height:1;border-radius:6px}
+.bubble:hover .more{opacity:1}
+@media(hover:none){.more{opacity:.5}}
+.quote{border-left:3px solid var(--cyan);background:#0003;padding:4px 8px;margin-bottom:6px;border-radius:6px;font-size:12px;color:#c3d3dd;cursor:pointer}
+.reacts{display:flex;gap:4px;margin-top:-6px;z-index:1}
+.reacts span{background:#1a2630;border:1px solid var(--line);border-radius:12px;padding:0 6px;font-size:13px}
+.menu{position:absolute;z-index:6;background:#101b23;border:1px solid var(--line);border-radius:12px;padding:6px;display:flex;flex-direction:column;gap:2px;box-shadow:0 10px 30px #000a;top:100%;min-width:150px}
+.msg.mine .menu{right:0}
+.menu .emojis{display:flex;gap:2px;padding-bottom:4px;border-bottom:1px solid var(--line)}
+.menu button{background:none;color:var(--text);text-align:left;padding:7px 10px;border-radius:8px;font-weight:500}
+.menu button:hover{background:#1a2630}.menu .emojis button{padding:4px 6px;font-size:18px}
+.sys{align-self:center;background:#14202a;border:1px solid var(--line);border-radius:20px;padding:4px 14px;font-size:12px;color:var(--muted);margin:6px 0}
+.file{display:flex;gap:10px;align-items:center;background:#0003;border-radius:10px;padding:8px 10px;cursor:pointer;color:var(--text);text-align:left;font-weight:500;width:100%}
+.file small{color:var(--muted);display:block}
+.voice{display:flex;align-items:center;gap:10px;min-width:210px}
+.voice button{width:36px;height:36px;border-radius:50%;padding:0;flex-shrink:0}
+.wave{display:flex;align-items:center;gap:2px;height:30px;flex:1}.wave i{display:block;width:3px;border-radius:2px;background:#46606f}.wave i.p{background:var(--cyan)}
+.voice .dur{font-size:11px;color:#a9bbc7;min-width:32px}
+.replybar{display:flex;align-items:center;gap:10px;padding:8px 14px;border-top:1px solid var(--line);background:#0b1218;font-size:13px}
+.replybar div{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;border-left:3px solid var(--cyan);padding-left:8px}
+.busy{padding:4px 16px;font-size:12px;color:var(--cyan)}
+.composer{display:flex;gap:8px;padding:12px;border-top:1px solid var(--line);align-items:center;position:relative}
+.composer input[type=text]{flex:1;min-width:0;padding:12px 14px;background:#080e13;border:1px solid var(--line);border-radius:22px;color:var(--text);outline:none}
+.composer input[type=text]:focus{border-color:var(--cyan)}
+.recbar{display:flex;align-items:center;gap:12px;flex:1;padding:6px 12px;background:#2a1018;border:1px solid #5a2030;border-radius:22px}
+.recbar .dot{width:10px;height:10px;border-radius:50%;background:var(--danger);animation:blink 1s infinite}
+@keyframes blink{50%{opacity:.2}}
+.pop{position:absolute;bottom:68px;left:12px;background:#101b23;border:1px solid var(--line);border-radius:14px;padding:8px;z-index:7;box-shadow:0 10px 30px #000a}
+.pop.attach{display:flex;flex-direction:column;gap:4px}
+.pop.attach button{background:none;color:var(--text);text-align:left;font-weight:500}.pop.attach button:hover{background:#1a2630}
+.pop.emoji{width:min(340px,calc(100% - 24px));height:280px;display:flex;flex-direction:column}
+.pop .ptabs{display:flex;gap:6px;margin-bottom:6px}.pop .ptabs button{flex:1;padding:6px;background:#1a2630;color:var(--text);font-size:13px}.pop .ptabs button.active{background:var(--cyan);color:#041116}
+.grid{flex:1;overflow:auto;display:grid;grid-template-columns:repeat(8,1fr);gap:2px;align-content:start}
+.grid.st{grid-template-columns:repeat(4,1fr)}
+.grid button{background:none;padding:4px;font-size:22px;border-radius:8px}.grid.st button{font-size:40px}.grid button:hover{background:#1a2630}
+
+/* modals */
+.modal{position:fixed;inset:0;background:#000b;z-index:20;display:grid;place-items:center;padding:16px}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:18px;padding:22px;width:min(460px,100%);max-height:90dvh;overflow:auto}
+.card h2{margin:0 0 10px}
+.profile-av{display:flex;flex-direction:column;align-items:center;gap:10px;margin-bottom:6px}
+.profile-av .avatar{width:96px;height:96px;font-size:36px}
+.lightbox{position:fixed;inset:0;background:#000e;z-index:30;display:grid;place-items:center;cursor:zoom-out}
+.lightbox img,.lightbox video{max-width:96vw;max-height:94vh;border-radius:8px}
+.toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);background:#16222b;border:1px solid var(--line);padding:10px 16px;border-radius:12px;z-index:50;max-width:90vw;box-shadow:0 10px 30px #000a}
+
+/* calls */
+.call{position:fixed;inset:0;z-index:40;background:#05080b;display:flex;flex-direction:column}
+.call video#remoteVideo{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;background:#05080b}
+.call .ovl{position:relative;z-index:2;padding:20px;text-align:center;text-shadow:0 2px 8px #000}
+.call .ovl .avatar{width:96px;height:96px;font-size:36px;margin:30px auto 10px}
+.call #localVideo{position:absolute;right:16px;top:16px;width:120px;height:160px;object-fit:cover;border-radius:14px;border:2px solid #fff3;z-index:3;background:#000;transform:scaleX(-1)}
+.call .ctrls{position:absolute;bottom:0;left:0;right:0;z-index:3;display:flex;justify-content:center;gap:18px;padding:26px}
+.call .ctrls button{width:60px;height:60px;border-radius:50%;padding:0;font-size:24px}
+.incoming{position:fixed;inset:0;z-index:45;background:#05080bf2;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;text-align:center}
+.incoming .avatar{width:110px;height:110px;font-size:40px}
+.incoming .ctrls{display:flex;gap:40px;margin-top:30px}.incoming .ctrls button{width:68px;height:68px;border-radius:50%;padding:0;font-size:28px}
+.accept{background:var(--green)!important}
+
+/* shorts */
+.shorts{background:#000;position:relative;display:flex;justify-content:center}
+.feed{height:100%;width:min(460px,100%);overflow-y:scroll;scroll-snap-type:y mandatory;scrollbar-width:none}.feed::-webkit-scrollbar{display:none}
+.short{height:100%;scroll-snap-align:start;scroll-snap-stop:always;position:relative;background:#000}
+.short video{width:100%;height:100%;object-fit:contain;background:#000}
+.short .shade{position:absolute;inset:auto 0 0 0;height:40%;background:linear-gradient(transparent,#000c);pointer-events:none}
+.short .info{position:absolute;left:14px;right:80px;bottom:18px;text-shadow:0 1px 6px #000;pointer-events:none}
+.short .info p{margin:4px 0 0;font-size:14px}
+.rail{position:absolute;right:10px;bottom:24px;display:flex;flex-direction:column;gap:14px;align-items:center}
+.rail button{background:#0008;color:#fff;border:0;width:48px;height:48px;border-radius:50%;padding:0;font-size:22px;display:grid;place-items:center}
+.rail .cnt{font-size:12px;margin-top:-10px;text-shadow:0 1px 4px #000}
+.rail button.liked{color:#ff4d6d}
+.shorts-top{position:absolute;top:10px;left:10px;right:10px;display:flex;gap:8px;z-index:3;justify-content:space-between;pointer-events:none}.shorts-top>*{pointer-events:auto}
+.shorts-empty{margin:auto;color:var(--muted);text-align:center;padding:20px}
+.comment{padding:8px 0;border-bottom:1px solid var(--line);font-size:14px}.comment b{color:var(--cyan)}
+
+@media(max-width:760px){
+ .app{grid-template-columns:1fr;height:calc(100dvh - 100px);border-radius:12px}
+ .app:not(.in-main) .chat,.app:not(.in-main) .shorts{display:none}
+ .app.in-main .side{display:none}
+ .back{display:grid}
+ .top{padding:0 12px}.wrap{margin:8px auto;padding:0 8px}
+ .auth{margin:3vh 10px;padding:22px}
+ .bubble{max-width:86%}
+}
+</style>
+</head>
+<body>
+<header class="top">
+  <div class="brand">NEXUS <span>CHAT</span></div>
+  <div class="topright">
+    <div class="status" id="topStatus">Secure messaging workspace</div>
+    <button id="logoutBtn" class="secondary hide" type="button">Sign out</button>
+  </div>
+</header>
+
+<main class="wrap">
+<!-- ============ AUTH ============ -->
+<section id="authView" class="auth">
+  <h1 id="authTitle">Welcome to NEXUS CHAT</h1>
+  <p class="muted" id="authSubtitle">Sign in to continue to your messages.</p>
+  <form id="authForm">
+    <div id="nameFields" class="hide">
+      <div class="row"><div class="field"><label for="firstName">First name</label><input id="firstName" autocomplete="given-name"></div><div class="field"><label for="lastName">Last name</label><input id="lastName" autocomplete="family-name"></div></div>
+      <div class="row"><div class="field"><label for="country">Country</label><input id="country" placeholder="e.g. Rwanda"></div><div class="field"><label for="phone">International phone</label><input id="phone" placeholder="+250..." autocomplete="tel"></div></div>
+    </div>
+    <div class="field"><label for="email">Email address</label><input id="email" type="email" required autocomplete="email" placeholder="you@example.com"></div>
+    <div class="field"><label for="password">Password</label><div class="pw"><input id="password" type="password" required minlength="8" autocomplete="current-password" placeholder="At least 8 characters"><button class="pwtoggle" id="pwToggle" type="button" aria-label="Show or hide password">👁</button></div><div class="hint hide" id="pwHint">Use at least 8 characters with letters and numbers. Passwords are stored only as a secure hash, never as text.</div></div>
+    <button id="authButton" class="wide" type="submit">Sign in</button><div id="authError" class="error" role="alert"></div>
+    <div class="switch" id="forgotRow"><button class="link" id="forgotBtn" type="button">Forgot password?</button></div>
+  </form>
+  <div class="switch"><span id="switchText">New here?</span> <button class="link" id="switchMode" type="button">Create an account</button></div>
+  <p class="note">Powered by Supabase. Messages and media are private between the two people in a conversation.</p>
+</section>
+
+<!-- ============ APP ============ -->
+<section id="appView" class="app hide">
+  <aside class="side">
+    <div class="sidehead">
+      <div class="me-row">
+        <div id="meAvatar" class="clickable" title="My profile"></div>
+        <div class="grow"><div class="contact-name" id="meName">Me</div><div class="contact-sub green">● online</div></div>
+        <button class="icon" id="meBtn" title="Profile" type="button">⚙️</button>
+      </div>
+      <nav class="tabs">
+        <button data-tab="chats" class="active" type="button">💬 Chats</button>
+        <button data-tab="people" type="button">👥 People</button>
+        <button data-tab="shorts" type="button">🎬 Shorts</button>
+      </nav>
+      <input id="userSearch" class="search" placeholder="Search name, email or country">
+    </div>
+    <div id="panelChats" class="list"></div>
+    <div id="panelPeople" class="list hide">
+      <div class="pad">
+        <button class="wide secondary" id="importContacts" type="button">📱 Pick from phone contacts</button>
+        <button class="wide secondary" id="importFile" type="button">📇 Import contacts file (.vcf / .csv)</button>
+        <input type="file" id="contactFile" accept=".vcf,.csv,text/vcard,text/x-vcard,text/csv" class="hide">
+        <div class="note">Tip: type a full phone number in the search box to find a person directly. On iPhone: open a contact, Share, save as .vcf, then import it here. Numbers are matched privately and never shown.</div>
+      </div>
+      <div id="peopleList"></div>
+    </div>
+  </aside>
+
+  <!-- chat -->
+  <section class="chat" id="chatView">
+    <div class="chathead">
+      <button class="icon back" id="backBtn" type="button">←</button>
+      <div id="chatAvatar"><div class="avatar">N</div></div>
+      <div class="info-col"><h3 id="chatName">Choose a person</h3><div class="contact-sub" id="chatSub">Select a contact to start chatting</div></div>
+      <button class="icon" id="voiceCallBtn" type="button" title="Voice call" disabled>📞</button>
+      <button class="icon" id="videoCallBtn" type="button" title="Video call" disabled>🎥</button>
+    </div>
+    <div id="messages" class="messages"><div class="empty"><h2>Welcome 👋</h2><p>Select a person from the list to start a private conversation.</p></div></div>
+    <div class="busy hide" id="busy"></div>
+    <div class="replybar hide" id="replyBar"><div id="replyText"></div><button class="icon" id="replyCancel" type="button">✕</button></div>
+    <form id="sendForm" class="composer">
+      <button class="icon" id="attachBtn" type="button" disabled title="Attach">📎</button>
+      <button class="icon" id="emojiBtn" type="button" disabled title="Emoji & stickers">😊</button>
+      <input id="messageInput" type="text" maxlength="4000" placeholder="Write a message..." autocomplete="off" disabled>
+      <div class="recbar hide" id="recBar"><span class="dot"></span><span id="recTime">0:00</span><span class="muted" style="flex:1">Recording…</span><button class="icon" id="recCancel" type="button">🗑</button></div>
+      <button class="icon hide" id="sendButton" type="submit" title="Send" style="background:var(--cyan);color:#041116">➤</button>
+      <button class="icon" id="micBtn" type="button" title="Voice message" disabled>🎤</button>
+      <div class="pop attach hide" id="attachPop">
+        <button type="button" data-pick="media">🖼 Photos & videos</button>
+        <button type="button" data-pick="cam">📷 Take photo</button>
+        <button type="button" data-pick="vid">🎥 Record video</button>
+        <button type="button" data-pick="doc">📄 Document</button>
+      </div>
+      <div class="pop emoji hide" id="emojiPop">
+        <div class="ptabs"><button type="button" class="active" data-et="emoji">Emoji</button><button type="button" data-et="stickers">Stickers</button></div>
+        <div class="grid" id="emojiGrid"></div>
+      </div>
+    </form>
+    <input type="file" id="fileMedia" accept="image/*,video/*" multiple class="hide">
+    <input type="file" id="fileCam" accept="image/*" capture class="hide">
+    <input type="file" id="fileVid" accept="video/*" capture class="hide">
+    <input type="file" id="fileDoc" class="hide">
+    <input type="file" id="fileSticker" accept="image/*" class="hide">
+  </section>
+
+  <!-- shorts -->
+  <section class="shorts hide" id="shortsView">
+    <div class="shorts-top">
+      <button class="icon back" id="shortsBack" type="button">←</button>
+      <div style="display:flex;gap:8px;margin-left:auto">
+        <button class="icon" id="shortsMute" type="button" title="Sound">🔇</button>
+        <button class="icon" id="shortsRefresh" type="button" title="Refresh">⟳</button>
+        <button id="shortsNew" type="button">＋ Post</button>
+      </div>
+    </div>
+    <div class="feed" id="feed"></div>
+  </section>
+</section>
+<p class="note" id="footerNote">NEXUS CHAT • Use respectful communication. Do not share passwords or sensitive personal information.</p>
+</main>
+
+<!-- profile modal -->
+<div class="modal hide" id="profileModal"><div class="card">
+  <h2>My profile</h2>
+  <div class="profile-av"><div id="profAvatar"></div><button class="secondary" id="avatarBtn" type="button">📷 Change photo</button><input type="file" id="avatarFile" accept="image/*" class="hide"></div>
+  <div class="row"><div class="field"><label>First name</label><input id="pFirst"></div><div class="field"><label>Last name</label><input id="pLast"></div></div>
+  <div class="row"><div class="field"><label>Country</label><input id="pCountry"></div><div class="field"><label>Phone (private)</label><input id="pPhone" placeholder="+250..."></div></div>
+  <div class="field"><label>Bio</label><textarea id="pBio" rows="2" maxlength="160" placeholder="Say something about you…"></textarea></div>
+  <div class="field"><label>App & notifications</label>
+    <div class="row"><button class="secondary" id="pushBtn" type="button">🔔 Notifications: Off</button><button class="secondary hide" id="installBtn" type="button">📲 Install app</button></div></div>
+  <div class="field"><label>Change password</label>
+    <input id="pNewPw" type="password" autocomplete="new-password" placeholder="New password (min 8, letters + numbers)">
+    <input id="pNewPw2" type="password" autocomplete="new-password" placeholder="Repeat new password" style="margin-top:6px">
+    <button class="secondary" id="pPwBtn" type="button" style="margin-top:6px">Update password</button></div>
+  <div class="error" id="pErr"></div>
+  <div class="row"><button id="pSave" type="button">Save</button><button class="secondary" id="pClose" type="button">Close</button></div>
+</div></div>
+
+<!-- new short modal -->
+<div class="modal hide" id="shortModal"><div class="card">
+  <h2>Post a short video</h2>
+  <video id="shortPreview" class="hide" controls playsinline style="width:100%;max-height:260px;border-radius:12px;background:#000;margin-bottom:8px"></video>
+  <div class="row"><button class="secondary" id="shortPick" type="button">🎞 Choose video</button><button class="secondary" id="shortRec" type="button">🎥 Record</button></div>
+  <input type="file" id="shortFile" accept="video/*" class="hide"><input type="file" id="shortCam" accept="video/*" capture class="hide">
+  <div class="field"><label>Caption</label><textarea id="shortCaption" rows="2" maxlength="200" placeholder="Describe your video… #hashtags"></textarea></div>
+  <div class="error" id="shortErr"></div>
+  <div class="row"><button id="shortPost" type="button" disabled>Post</button><button class="secondary" id="shortClose" type="button">Cancel</button></div>
+  <p class="note">Max 50 MB and 90 seconds.</p>
+</div></div>
+
+<!-- comments modal -->
+<div class="modal hide" id="commentModal"><div class="card">
+  <h2>Comments</h2><div id="commentList" style="max-height:40dvh;overflow:auto"></div>
+  <form id="commentForm" class="row" style="margin-top:10px"><input id="commentInput" class="search" maxlength="500" placeholder="Add a comment…" autocomplete="off"><button type="submit" style="flex:0 0 auto">Send</button></form>
+  <button class="secondary wide" id="commentClose" type="button">Close</button>
+</div></div>
+
+<!-- password recovery -->
+<div class="modal hide" id="recModal"><div class="card">
+  <h2>Set a new password</h2><p class="muted">Choose a new password for your account.</p>
+  <div class="field"><input id="recPw" type="password" autocomplete="new-password" placeholder="New password (min 8, letters + numbers)"></div>
+  <div class="field"><input id="recPw2" type="password" autocomplete="new-password" placeholder="Repeat password"></div>
+  <div class="error" id="recErr"></div><button class="wide" id="recSave" type="button">Save password</button>
+</div></div>
+
+<!-- calls -->
+<div class="incoming hide" id="incoming">
+  <div id="inAvatar"></div><h2 id="inName" style="margin:0"></h2><div class="muted" id="inKind"></div>
+  <div class="ctrls"><button class="danger" id="declineBtn" type="button">✕</button><button class="accept" id="acceptBtn" type="button">✓</button></div>
+</div>
+<div class="call hide" id="callUI">
+  <video id="remoteVideo" autoplay playsinline></video>
+  <video id="localVideo" autoplay playsinline muted></video>
+  <div class="ovl"><div id="callAvatar"></div><h2 id="callName" style="margin:0"></h2><div id="callStatus">Calling…</div></div>
+  <div class="ctrls">
+    <button class="secondary" id="muteBtn" type="button" title="Mute">🎤</button>
+    <button class="secondary" id="camBtn" type="button" title="Camera">📷</button>
+    <button class="danger" id="hangBtn" type="button" title="End">📵</button>
+  </div>
+</div>
+<div class="lightbox hide" id="lightbox"></div>
+
+<script type="module">
+import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm";
+
+/*
+  SETUP:
+  1. Run supabase-setup.sql in Supabase Dashboard > SQL Editor.
+  2. Paste your Project URL and the "anon" / "publishable" key below.
+     NEVER put a secret / service_role key in this file.
+  3. (Optional, quick testing) Authentication > Providers > Email: turn off "Confirm email".
+  4. Calls and push need HTTPS (or localhost).
+  5. Push notifications: paste your VAPID PUBLIC key below and follow SETUP.md.
+  6. For reliable calls on every mobile network use your own TURN server (see TURN_SERVERS).
+*/
+const SUPABASE_URL = "https://pfbmjgbxvwsoubkttrja.supabase.co";
+const SUPABASE_ANON_KEY = "sb_publishable_sqpTMnRsPjv9mUPrXH49eQ_SYfBYjlJ";
+const VAPID_PUBLIC_KEY = "";   // from: npx web-push generate-vapid-keys (public key only!)
+// TURN relays calls when a direct connection is impossible (strict mobile networks).
+// The Open Relay entries are a free SHARED test service - replace them with your own
+// TURN (Metered, Twilio, Cloudflare, or coturn) before launching to real users.
+const TURN_SERVERS = [
+  { urls: "turn:openrelay.metered.ca:80", username: "openrelayproject", credential: "openrelayproject" },
+  { urls: "turn:openrelay.metered.ca:443", username: "openrelayproject", credential: "openrelayproject" },
+  { urls: "turn:openrelay.metered.ca:443?transport=tcp", username: "openrelayproject", credential: "openrelayproject" }
+];
+const ICE_CONFIG = {
+  iceServers: [
+    { urls: "stun:stun.l.google.com:19302" },
+    { urls: "stun:stun1.l.google.com:19302" },
+    ...TURN_SERVERS
+  ]
+};
+
+const configured = !!(SUPABASE_URL && SUPABASE_ANON_KEY);
+const supabase = configured ? createClient(SUPABASE_URL, SUPABASE_ANON_KEY) : null;
+const PROFILE_COLS = "id,email,first_name,last_name,country,avatar_url,bio,last_seen,created_at";
+const MAX_FILE = 50 * 1024 * 1024;
+
+const $ = id => document.getElementById(id);
+const mk = (tag, cls, text) => { const e = document.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = text; return e; };
+
+/* ---------- state ---------- */
+let createMode = false, me = null, myProfile = null, selected = null, tab = "chats";
+const users = new Map();           // id -> profile
+let msgs = [];                     // messages of open conversation
+const msgNodes = new Map();        // id -> DOM node
+const lastByConv = new Map();      // peerId -> last message
+const unread = new Map();          // peerId -> count
+let online = new Set();
+const typingUntil = new Map();
+let replyTo = null;
+let phoneMatches = new Map(), phoneInvites = [], phoneFound = new Map(), loadingOlder = false, noMoreOlder = false;
+const channels = {};
+let heartbeat = null, lastTypingSent = 0;
+const urlCache = new Map();
+
+/* ---------- helpers ---------- */
+const initials = p => ((p?.first_name || p?.email || "N").trim()[0] || "N").toUpperCase();
+const fullName = p => [p?.first_name, p?.last_name].filter(Boolean).join(" ") || p?.email || "User";
+const conversationId = (a, b) => [a, b].sort().join("_");
+function avatar(p, size) {
+  const a = mk("div", "avatar");
+  if (size) { a.style.width = a.style.height = size + "px"; a.style.fontSize = size / 2.6 + "px"; }
+  if (p?.avatar_url) { const i = document.createElement("img"); i.src = p.avatar_url; i.alt = ""; a.append(i); } else a.textContent = initials(p);
+  return a;
+}
+function fmtShort(ts) {
+  const d = new Date(ts), n = new Date();
+  if (d.toDateString() === n.toDateString()) return d.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+  return d.toLocaleDateString([], { day: "numeric", month: "short" });
+}
+const fmtFull = ts => { try { return new Date(ts || Date.now()).toLocaleString([], { hour: "2-digit", minute: "2-digit", day: "numeric", month: "short" }); } catch { return ""; } };
+const fmtDur = s => { s = Math.max(0, Math.round(s || 0)); return Math.floor(s / 60) + ":" + String(s % 60).padStart(2, "0"); };
+function toast(msg, ms = 3500) { const t = mk("div", "toast", msg); document.body.append(t); setTimeout(() => t.remove(), ms); }
+function showError(message, ok = false) { const el = $("authError"); el.textContent = message || ""; el.classList.toggle("info", ok); }
+function friendlyError(err) {
+  const m = (err?.message || "").toLowerCase();
+  if (m.includes("already registered")) return "This email already has an account. Sign in instead.";
+  if (m.includes("invalid login")) return "Email or password is incorrect.";
+  if (m.includes("email not confirmed")) return "Please confirm your email first (check your inbox).";
+  if (m.includes("different from the old")) return "Choose a password different from your old one.";
+  if (m.includes("rate limit") || err?.status === 429) return "Too many attempts. Please wait a minute and try again.";
+  if (m.includes("password") && (m.includes("least") || m.includes("short") || m.includes("weak") || m.includes("characters"))) return "Choose a stronger password (min 8 characters, letters + numbers).";
+  if (m.includes("row-level security") || err?.code === "42501") return "Supabase security rules blocked this action. Re-run supabase-setup.sql.";
+  if (m.includes("exceeded") || m.includes("too large") || m.includes("payload")) return "File is too large (max 50 MB).";
+  return err?.message || "Something went wrong.";
+}
+let audioCtx;
+function beep(freq = 880, dur = .12, vol = .05) {
+  try {
+    audioCtx = audioCtx || new (window.AudioContext || window.webkitAudioContext)();
+    const o = audioCtx.createOscillator(), g = audioCtx.createGain();
+    o.frequency.value = freq; g.gain.value = vol; o.connect(g); g.connect(audioCtx.destination);
+    o.start(); o.stop(audioCtx.currentTime + dur);
+  } catch {}
+}
+function imageToBlob(file, max, { type = "image/jpeg", q = .82, square = false } = {}) {
+  return new Promise((res, rej) => {
+    const img = new Image(), url = URL.createObjectURL(file);
+    img.onload = () => {
+      let w = img.naturalWidth, hh = img.naturalHeight, sx = 0, sy = 0, sw = w, sh = hh;
+      if (square) { const s = Math.min(w, hh); sx = (w - s) / 2; sy = (hh - s) / 2; sw = sh = s; w = hh = s; }
+      const k = Math.min(1, max / Math.max(w, hh)), c = document.createElement("canvas");
+      c.width = Math.round(w * k); c.height = Math.round(hh * k);
+      c.getContext("2d").drawImage(img, sx, sy, sw, sh, 0, 0, c.width, c.height);
+      c.toBlob(b => { URL.revokeObjectURL(url); b ? res(b) : rej(new Error("Image error")); }, type, q);
+    };
+    img.onerror = () => { URL.revokeObjectURL(url); rej(new Error("Cannot read this image")); };
+    img.src = url;
+  });
+}
+const EXT = { "image/jpeg": "jpg", "image/png": "png", "image/webp": "webp", "image/gif": "gif", "video/mp4": "mp4", "video/webm": "webm", "video/quicktime": "mov", "audio/webm": "webm", "audio/mp4": "m4a", "audio/ogg": "ogg" };
+const baseMime = b => (b.type || "").split(";")[0];
+function extOf(blob, name) { return EXT[baseMime(blob)] || ((name || "").split(".").pop() || "bin").toLowerCase().replace(/[^a-z0-9]/g, "").slice(0, 5) || "bin"; }
+async function signedUrl(path) {
+  const c = urlCache.get(path);
+  if (c && c.exp > Date.now()) return c.url;
+  const { data, error } = await supabase.storage.from("chat-media").createSignedUrl(path, 86400);
+  if (error) throw error;
+  urlCache.set(path, { url: data.signedUrl, exp: Date.now() + 80000 * 1000 });
+  return data.signedUrl;
+}
+
+/* ---------- auth ---------- */
+function setMode(v) {
+  createMode = v;
+  $("nameFields").classList.toggle("hide", !v);
+  $("authTitle").textContent = v ? "Create your account" : "Welcome to NEXUS CHAT";
+  $("authSubtitle").textContent = v ? "Create an account to find people and chat in real time." : "Sign in to continue to your messages.";
+  $("authButton").textContent = v ? "Create account" : "Sign in";
+  $("switchText").textContent = v ? "Already have an account?" : "New here?";
+  $("switchMode").textContent = v ? "Sign in" : "Create an account";
+  $("password").autocomplete = v ? "new-password" : "current-password";
+  $("forgotRow").classList.toggle("hide", v); $("pwHint").classList.toggle("hide", !v);
+  showError("");
+}
+$("switchMode").addEventListener("click", () => setMode(!createMode));
+function checkPassword(pw) {
+  if (pw.length < 8) return "Password must be at least 8 characters.";
+  if (!/[A-Za-z]/.test(pw) || !/\d/.test(pw)) return "Password must contain both letters and numbers.";
+  if (/^(12345678|password|qwerty|11111111)/i.test(pw)) return "That password is too easy to guess.";
+  return "";
+}
+$("pwToggle").addEventListener("click", () => {
+  const i = $("password"), show = i.type === "password";
+  i.type = show ? "text" : "password"; $("pwToggle").textContent = show ? "🙈" : "👁";
+});
+$("forgotBtn").addEventListener("click", async () => {
+  showError("");
+  if (!configured) { showError("Supabase is not configured yet."); return; }
+  const email = $("email").value.trim();
+  if (!email) { showError("Type your email above first, then press Forgot password."); return; }
+  const { error } = await supabase.auth.resetPasswordForEmail(email, { redirectTo: location.origin + location.pathname });
+  if (error) showError(friendlyError(error)); else showError("If this email has an account, a reset link is on its way. Check your inbox.", true);
+});
+async function saveNewPassword(pw, pw2, errEl) {
+  const e = checkPassword(pw); if (e) { errEl.textContent = e; return false; }
+  if (pw !== pw2) { errEl.textContent = "The two passwords do not match."; return false; }
+  const { error } = await supabase.auth.updateUser({ password: pw });
+  if (error) { errEl.textContent = friendlyError(error); return false; }
+  errEl.textContent = ""; return true;
+}
+$("recSave").addEventListener("click", async () => {
+  if (await saveNewPassword($("recPw").value, $("recPw2").value, $("recErr"))) {
+    $("recModal").classList.add("hide"); $("recPw").value = $("recPw2").value = ""; toast("Password updated ✓");
+  }
+});
+$("pPwBtn").addEventListener("click", async () => {
+  if (await saveNewPassword($("pNewPw").value, $("pNewPw2").value, $("pErr"))) { $("pNewPw").value = $("pNewPw2").value = ""; toast("Password updated ✓"); }
+});
+$("authForm").addEventListener("submit", async e => {
+  e.preventDefault(); showError("");
+  if (!configured) { showError("Supabase is not configured yet. Paste SUPABASE_URL and SUPABASE_ANON_KEY at the top of the script in this file."); return; }
+  const email = $("email").value.trim(), password = $("password").value;
+  $("authButton").disabled = true;
+  try {
+    if (createMode) {
+      const first_name = $("firstName").value.trim(), last_name = $("lastName").value.trim(), country = $("country").value.trim(), phone = $("phone").value.trim();
+      if (!first_name || !last_name || !country || !phone) { showError("Please complete first name, last name, country, and international phone."); return; }
+      const pwErr = checkPassword(password); if (pwErr) { showError(pwErr); return; }
+      const { data, error } = await supabase.auth.signUp({ email, password, options: { data: { first_name, last_name, country, phone } } });
+      if (error) throw error;
+      if (!data.session) showError("Account created! Check your email to confirm it, then sign in.", true);
+    } else {
+      const { error } = await supabase.auth.signInWithPassword({ email, password });
+      if (error) throw error;
+    }
+  } catch (err) { showError(friendlyError(err)); }
+  finally { $("authButton").disabled = false; }
+});
+
+/* ---------- navigation ---------- */
+function setTab(t) {
+  tab = t;
+  document.querySelectorAll(".tabs button").forEach(b => b.classList.toggle("active", b.dataset.tab === t));
+  $("panelChats").classList.toggle("hide", t === "people");
+  $("panelPeople").classList.toggle("hide", t !== "people");
+  if (t === "shorts") { showView("shorts"); loadShorts(); }
+  else { if (!$("shortsView").classList.contains("hide")) showView("chat"); }
+  if (t === "people") renderPeople(); else renderConversations();
+}
+function showView(v) {
+  $("chatView").classList.toggle("hide", v !== "chat");
+  $("shortsView").classList.toggle("hide", v !== "shorts");
+  if (v !== "shorts") document.querySelectorAll("#feed video").forEach(x => x.pause());
+  if (v === "shorts" || selected) $("appView").classList.add("in-main");
+}
+document.querySelectorAll(".tabs button").forEach(b => b.addEventListener("click", () => setTab(b.dataset.tab)));
+$("backBtn").addEventListener("click", () => $("appView").classList.remove("in-main"));
+$("shortsBack").addEventListener("click", () => { $("appView").classList.remove("in-main"); setTab("chats"); });
+$("userSearch").addEventListener("input", () => tab === "people" ? onPeopleSearch() : renderConversations());
+
+/* ---------- conversations & people lists ---------- */
+function onlineLabel(p) {
+  if (online.has(p.id)) return { t: "online", on: true };
+  if (p.last_seen) return { t: "last seen " + fmtFull(p.last_seen), on: false };
+  return { t: p.country || "offline", on: false };
+}
+function preview(m) {
+  if (!m) return "";
+  const pre = m.sender_id === me.id ? "You: " : "";
+  if (m.deleted) return "🚫 Message deleted";
+  const map = { image: "📷 Photo", video: "🎥 Video", audio: "🎤 Voice message", sticker: "🙂 Sticker", call: "📞 Call" };
+  if (m.type === "file") return pre + "📄 " + (m.media_meta?.name || "File");
+  return pre + (map[m.type] || m.text);
+}
+function contactRow(p, { sub, time, count, onClick, extra }) {
+  const item = mk("div", "contact" + (selected?.id === p.id ? " active" : ""));
+  const av = avatar(p); if (online.has(p.id)) av.classList.add("on");
+  const body = mk("div", "body"), l1 = mk("div", "line1");
+  l1.append(mk("div", "contact-name", fullName(p)), mk("div", "time", time || ""));
+  body.append(l1, mk("div", "contact-sub", sub || ""));
+  item.append(av, body);
+  if (count) item.append(mk("div", "unread", count > 99 ? "99+" : String(count)));
+  if (extra) item.append(extra);
+  item.addEventListener("click", onClick || (() => chooseContact(p)));
+  return item;
+}
+function renderConversations() {
+  const totalUnread = [...unread.values()].reduce((a, b) => a + b, 0);
+  document.title = (totalUnread ? `(${totalUnread}) ` : "") + "NEXUS CHAT";
+  try { totalUnread ? navigator.setAppBadge?.(totalUnread) : navigator.clearAppBadge?.(); } catch {}
+  const list = $("panelChats"), term = $("userSearch").value.toLowerCase(); list.innerHTML = "";
+  const rows = [...lastByConv.entries()].map(([pid, m]) => ({ p: users.get(pid), m }))
+    .filter(r => r.p && `${fullName(r.p)} ${r.p.email}`.toLowerCase().includes(term))
+    .sort((a, b) => new Date(b.m.created_at) - new Date(a.m.created_at));
+  if (!rows.length) { list.append(mk("div", "note pad", "No conversations yet. Open the People tab to start one.")); return; }
+  for (const { p, m } of rows) {
+    const typing = (typingUntil.get(p.id) || 0) > Date.now();
+    list.append(contactRow(p, { sub: typing ? "typing…" : preview(m), time: fmtShort(m.created_at), count: unread.get(p.id) || 0 }));
+  }
+}
+function renderPeople() {
+  const list = $("peopleList"), term = $("userSearch").value.toLowerCase(); list.innerHTML = "";
+  if (phoneMatches.size) {
+    list.append(mk("div", "sect", "📱 From your phone contacts"));
+    for (const [id, cname] of phoneMatches) { const p = users.get(id); if (p) list.append(contactRow(p, { sub: cname + " • on NEXUS" })); }
+  }
+  if (phoneFound.size && term.replace(/\D/g, "").length >= 8) {
+    list.append(mk("div", "sect", "🔎 Found by phone number"));
+    for (const id of phoneFound.keys()) { const p = users.get(id); if (p) list.append(contactRow(p, { sub: "On NEXUS" })); }
+  }
+  list.append(mk("div", "sect", "Everyone on NEXUS"));
+  const f = [...users.values()].filter(u => u.id !== me.id && `${fullName(u)} ${u.email} ${u.country || ""}`.toLowerCase().includes(term));
+  if (!f.length && !phoneFound.size) list.append(mk("div", "note pad", "No other users found yet. Invite a friend!"));
+  for (const u of f) list.append(contactRow(u, { sub: onlineLabel(u).t }));
+  if (phoneInvites.length) {
+    list.append(mk("div", "sect", "Invite friends (not on NEXUS yet)"));
+    for (const c of phoneInvites.slice(0, 80)) {
+      const item = mk("div", "contact"), av = mk("div", "avatar", (c.name[0] || "?").toUpperCase());
+      const body = mk("div", "body"); body.append(mk("div", "contact-name", c.name), mk("div", "contact-sub", c.tel));
+      const b = mk("button", "secondary", "Invite"); b.style.padding = "6px 12px";
+      b.addEventListener("click", () => invite(c));
+      item.append(av, body, b); list.append(item);
+    }
+  }
+}
+async function invite(c) {
+  const text = "Join me on NEXUS CHAT – private chat, calls, voice notes and short videos.", url = location.href.split("#")[0];
+  if (navigator.share) { try { await navigator.share({ title: "NEXUS CHAT", text, url }); } catch {} }
+  else location.href = `sms:${c.tel}?body=${encodeURIComponent(text + " " + url)}`;
+}
+async function processContacts(list) {   // list: [{ name, tels: [] }]
+  const byNorm = new Map(), all = [];
+  for (const c of list) for (const tel of c.tels || []) {
+    const n = String(tel).replace(/\D/g, "").slice(-9); if (n.length < 7 || byNorm.has(n)) continue;
+    all.push(tel); byNorm.set(n, { name: c.name || tel, tel });
+  }
+  if (!all.length) { toast("No phone numbers found in that file."); return; }
+  const hits = [];
+  for (let i = 0; i < all.length; i += 400) {
+    const { data, error } = await supabase.rpc("match_contacts", { phones: all.slice(i, i + 400) });
+    if (error) throw error; hits.push(...(data || []));
+  }
+  phoneMatches = new Map(); const hit = new Set();
+  for (const r of hits) { phoneMatches.set(r.user_id, byNorm.get(r.phone_norm)?.name || ""); hit.add(r.phone_norm); }
+  phoneInvites = [...byNorm.entries()].filter(([n]) => !hit.has(n)).map(([, c]) => c);
+  toast(`${phoneMatches.size} of ${byNorm.size} contacts are on NEXUS.`);
+  renderPeople();
+}
+$("importContacts").addEventListener("click", async () => {
+  if (!("contacts" in navigator && "ContactsManager" in window)) {
+    toast("This browser cannot open your contact list (only Chrome on Android can). Use “Import contacts file” instead.", 6500); return;
+  }
+  try {
+    const picked = await navigator.contacts.select(["name", "tel"], { multiple: true });
+    await processContacts(picked.map(c => ({ name: c.name && c.name[0], tels: c.tel })));
+  } catch (err) { if (err?.name !== "AbortError") toast(friendlyError(err)); }
+});
+function parseVcf(text) {
+  const out = []; text = text.replace(/\r\n[ \t]/g, "").replace(/\r/g, "");
+  for (const block of text.split(/BEGIN:VCARD/i).slice(1)) {
+    let name = ""; const tels = [];
+    for (const raw of block.split("\n")) {
+      const m = raw.replace(/^item\d+\./i, "").match(/^([A-Za-z-]+)(?:;[^:]*)?:(.*)$/); if (!m) continue;
+      const k = m[1].toUpperCase(), v = m[2].trim();
+      if (k === "FN" && v) name = v;
+      else if (k === "N" && !name) name = v.split(";").filter(Boolean).reverse().join(" ");
+      else if (k === "TEL" && v) tels.push(v);
+    }
+    if (tels.length) out.push({ name, tels });
+  }
+  return out;
+}
+function parseCsv(text) {
+  const rows = []; let row = [], cur = "", q = false;
+  for (let i = 0; i < text.length; i++) {
+    const ch = text[i];
+    if (q) { if (ch === '"') { if (text[i + 1] === '"') { cur += '"'; i++; } else q = false; } else cur += ch; }
+    else if (ch === '"') q = true;
+    else if (ch === ",") { row.push(cur); cur = ""; }
+    else if (ch === "\n") { row.push(cur); rows.push(row); row = []; cur = ""; }
+    else if (ch !== "\r") cur += ch;
+  }
+  if (cur || row.length) { row.push(cur); rows.push(row); }
+  const head = (rows.shift() || []).map(h => h.trim().toLowerCase());
+  const phoneCols = head.map((h, i) => /phone|mobile|tel/.test(h) ? i : -1).filter(i => i >= 0);
+  const nameCols = head.map((h, i) => /name/.test(h) && !/phonetic|file|nick|user/.test(h) ? i : -1).filter(i => i >= 0);
+  return rows.map(r => ({ name: nameCols.map(i => r[i]).filter(Boolean).join(" ").trim(), tels: phoneCols.map(i => r[i]).filter(Boolean) })).filter(c => c.tels.length);
+}
+$("importFile").addEventListener("click", () => $("contactFile").click());
+$("contactFile").addEventListener("change", async e => {
+  const f = e.target.files[0]; e.target.value = ""; if (!f) return;
+  try {
+    const text = await f.text();
+    await processContacts(/\.csv$/i.test(f.name) ? parseCsv(text) : parseVcf(text));
+  } catch (err) { toast(friendlyError(err)); }
+});
+let phoneSearchTimer = null;
+function onPeopleSearch() {
+  renderPeople(); clearTimeout(phoneSearchTimer);
+  const val = $("userSearch").value;
+  if (val.replace(/\D/g, "").length < 8) { if (phoneFound.size) { phoneFound = new Map(); renderPeople(); } return; }
+  phoneSearchTimer = setTimeout(async () => {
+    const { data, error } = await supabase.rpc("match_contacts", { phones: [val] });
+    if (error) { toast(friendlyError(error)); return; }
+    phoneFound = new Map((data || []).map(r => [r.user_id, true])); renderPeople();
+  }, 600);
+}
+
+/* ---------- chat header ---------- */
+function updateChatHeader() {
+  if (!selected) return;
+  const p = users.get(selected.id) || selected;
+  $("chatAvatar").replaceChildren(avatar(p));
+  $("chatName").textContent = fullName(p);
+  const typing = (typingUntil.get(p.id) || 0) > Date.now(), ol = onlineLabel(p);
+  const sub = $("chatSub"); sub.textContent = typing ? "typing…" : ol.t;
+  sub.classList.toggle("green", typing || ol.on);
+}
+
+/* ---------- messages: render ---------- */
+function ticksOf(m) { return m.status === "read" ? { t: "✓✓", c: "read" } : m.status === "delivered" ? { t: "✓✓", c: "dlv" } : { t: "✓", c: "" }; }
+function asyncSrc(el, path, attr = "src") { signedUrl(path).then(u => { el[attr] = u; }).catch(() => { el.alt = "Media unavailable"; }); }
+function openLightbox(node) { const lb = $("lightbox"); lb.replaceChildren(node); lb.classList.remove("hide"); }
+$("lightbox").addEventListener("click", () => { $("lightbox").classList.add("hide"); $("lightbox").innerHTML = ""; });
+function snippet(m) {
+  if (!m) return "Message";
+  if (m.deleted) return "Deleted message";
+  return m.type === "text" ? m.text : preview({ ...m, sender_id: "" });
+}
+function voicePlayer(m) {
+  const wrap = mk("div", "voice"), btn = mk("button", "", "▶"), wave = mk("div", "wave"), dur = mk("span", "dur", fmtDur(m.media_meta?.duration));
+  let seed = 0; for (const ch of String(m.id)) seed = (seed * 31 + ch.charCodeAt(0)) >>> 0;
+  const bars = [];
+  for (let i = 0; i < 28; i++) { seed = (seed * 1664525 + 1013904223) >>> 0; const b = mk("i"); b.style.height = 6 + (seed % 22) + "px"; wave.append(b); bars.push(b); }
+  const audio = new Audio(); audio.preload = "none"; let loaded = false;
+  const paint = () => { const r = audio.duration ? audio.currentTime / audio.duration : 0; bars.forEach((b, i) => b.classList.toggle("p", i / bars.length < r)); };
+  audio.addEventListener("timeupdate", () => { paint(); dur.textContent = fmtDur(audio.currentTime); });
+  audio.addEventListener("ended", () => { btn.textContent = "▶"; audio.currentTime = 0; paint(); dur.textContent = fmtDur(m.media_meta?.duration); });
+  btn.addEventListener("click", async () => {
+    if (!loaded) { try { audio.src = await signedUrl(m.media_path); loaded = true; } catch { toast("Voice message unavailable"); return; } }
+    if (audio.paused) { document.querySelectorAll("audio").forEach(a => a.pause()); audio.play().catch(() => toast("Cannot play this audio")); btn.textContent = "⏸"; }
+    else { audio.pause(); btn.textContent = "▶"; }
+  });
+  audio.addEventListener("pause", () => { btn.textContent = "▶"; });
+  wave.addEventListener("click", e => { if (audio.duration) { const r = wave.getBoundingClientRect(); audio.currentTime = audio.duration * ((e.clientX - r.left) / r.width); } });
+  wrap.append(btn, wave, dur); return wrap;
+}
+function buildMessage(m) {
+  const mine = m.sender_id === me.id;
+  if (m.type === "call") {
+    const d = mk("div", "sys"), mt = m.media_meta || {}, kind = mt.video ? "Video call" : "Voice call";
+    d.textContent = (mt.video ? "🎥 " : "📞 ") + (mt.status === "ended" ? `${kind} · ${fmtDur(mt.duration)}` : mt.status === "declined" ? `${kind} declined` : `Missed ${kind.toLowerCase()}`) + " · " + fmtShort(m.created_at);
+    d.dataset.id = m.id; return d;
+  }
+  const wrap = mk("div", "msg" + (mine ? " mine" : "")); wrap.dataset.id = m.id;
+  const bubble = mk("div", "bubble" + (m.type === "sticker" && !m.deleted ? " sticker" : ""));
+  if (m.deleted) { bubble.classList.add("deleted"); bubble.textContent = "🚫 This message was deleted"; }
+  else {
+    if (m.reply_to) {
+      const o = msgs.find(x => x.id === m.reply_to), q = mk("div", "quote", snippet(o).slice(0, 80));
+      q.addEventListener("click", () => msgNodes.get(m.reply_to)?.scrollIntoView({ behavior: "smooth", block: "center" })); bubble.append(q);
+    }
+    if (m.type === "text") bubble.append(document.createTextNode(m.text));
+    else if (m.type === "image") { const i = mk("img", "media"); i.alt = "Photo"; i.loading = "lazy"; asyncSrc(i, m.media_path); i.addEventListener("click", () => { const c = document.createElement("img"); c.src = i.src; openLightbox(c); }); bubble.append(i); }
+    else if (m.type === "video") { const v = mk("video", "media"); v.controls = true; v.playsInline = true; v.preload = "metadata"; asyncSrc(v, m.media_path); bubble.append(v); }
+    else if (m.type === "audio") bubble.append(voicePlayer(m));
+    else if (m.type === "sticker") { if (m.media_path) { const i = mk("img"); i.alt = "Sticker"; asyncSrc(i, m.media_path); bubble.append(i); } else bubble.textContent = m.text; }
+    else if (m.type === "file") {
+      const f = mk("button", "file"), sz = m.media_meta?.size ? (m.media_meta.size / 1048576).toFixed(1) + " MB" : "";
+      const info = mk("div"); info.append(document.createTextNode(m.media_meta?.name || "File"), mk("small", "", sz));
+      f.append(mk("span", "", "📄"), info);
+      f.addEventListener("click", async () => { try { window.open(await signedUrl(m.media_path), "_blank", "noopener"); } catch { toast("File unavailable"); } });
+      bubble.append(f);
+    }
+    const more = mk("button", "more", "⋯"); more.type = "button"; more.addEventListener("click", e => { e.stopPropagation(); openMenu(m, wrap); }); bubble.append(more);
+  }
+  if (m.type !== "sticker" || m.deleted) {
+    const meta = mk("div", "meta", fmtShort(m.created_at));
+    if (mine && !m.deleted) { const t = ticksOf(m); meta.append(mk("span", "tick " + t.c, t.t)); }
+    bubble.append(meta);
+  }
+  wrap.append(bubble);
+  const rs = Object.values(m.reactions || {});
+  if (rs.length && !m.deleted) { const r = mk("div", "reacts"); for (const e of rs) r.append(mk("span", "", e)); wrap.append(r); }
+  return wrap;
+}
+function openMenu(m, wrap) {
+  document.querySelectorAll(".menu").forEach(x => x.remove());
+  const menu = mk("div", "menu"), em = mk("div", "emojis");
+  for (const e of ["👍", "❤️", "😂", "😮", "😢", "🙏"]) { const b = mk("button", "", e); b.type = "button"; b.addEventListener("click", ev => { ev.stopPropagation(); react(m, e); menu.remove(); }); em.append(b); }
+  menu.append(em);
+  const add = (label, fn) => { const b = mk("button", "", label); b.type = "button"; b.addEventListener("click", ev => { ev.stopPropagation(); menu.remove(); fn(); }); menu.append(b); };
+  add("↩ Reply", () => setReply(m));
+  if (m.type === "text") add("📋 Copy", () => navigator.clipboard?.writeText(m.text).then(() => toast("Copied")));
+  if (m.sender_id === me.id) add("🗑 Delete for everyone", () => deleteMsg(m));
+  wrap.append(menu);
+}
+document.addEventListener("click", () => document.querySelectorAll(".menu").forEach(x => x.remove()));
+function renderMessages() {
+  const area = $("messages"); area.innerHTML = ""; msgNodes.clear();
+  if (!msgs.length) { area.innerHTML = '<div class="empty"><h2>Say hello 👋</h2><p>This is the start of your conversation.</p></div>'; return; }
+  for (const m of msgs) { const n = buildMessage(m); msgNodes.set(m.id, n); area.append(n); }
+  area.scrollTop = area.scrollHeight;
+}
+function upsertMessageNode(m, forceScroll) {
+  const area = $("messages"), near = area.scrollHeight - area.scrollTop - area.clientHeight < 140;
+  const empty = area.querySelector(".empty"); if (empty) empty.remove();
+  const n = buildMessage(m), old = msgNodes.get(m.id);
+  if (old) old.replaceWith(n); else area.append(n);
+  msgNodes.set(m.id, n);
+  if (!old && (near || forceScroll)) area.scrollTop = area.scrollHeight;
+}
+function mergeLocal(m) {
+  const i = msgs.findIndex(x => x.id === m.id);
+  if (i >= 0) msgs[i] = { ...msgs[i], ...m }; else msgs.push(m);
+}
+
+/* ---------- messages: data ---------- */
+async function loadRecent() {
+  const { data, error } = await supabase.from("messages").select("*").or(`sender_id.eq.${me.id},recipient_id.eq.${me.id}`).order("created_at", { ascending: false }).limit(500);
+  if (error) { console.error(error); return; }
+  lastByConv.clear(); unread.clear();
+  for (const m of data) {
+    const peer = m.sender_id === me.id ? m.recipient_id : m.sender_id;
+    if (!lastByConv.has(peer)) lastByConv.set(peer, m);
+    if (m.recipient_id === me.id && m.status !== "read" && !m.deleted && m.type !== "call") unread.set(peer, (unread.get(peer) || 0) + 1);
+  }
+  // everything waiting for me is now "delivered"
+  supabase.from("messages").update({ status: "delivered", delivered_at: new Date().toISOString() }).eq("recipient_id", me.id).eq("status", "sent").then(() => {});
+}
+async function chooseContact(profile) {
+  selected = profile; if (tab === "shorts") setTab("chats");
+  showView("chat"); $("appView").classList.add("in-main");
+  renderConversations(); updateChatHeader();
+  for (const id of ["messageInput", "attachBtn", "emojiBtn", "micBtn", "voiceCallBtn", "videoCallBtn"]) $(id).disabled = false;
+  closePops(); clearReply();
+  msgs = []; $("messages").innerHTML = ""; msgNodes.clear(); loadingOlder = false; noMoreOlder = false;
+  const cid = conversationId(me.id, profile.id);
+  joinChatChannel(cid);
+  const { data, error } = await supabase.from("messages").select("*").eq("conversation_id", cid).order("created_at", { ascending: false }).limit(300);
+  if (error) { console.error(error); $("messages").innerHTML = '<div class="empty">Could not load messages. Check that supabase-setup.sql was run.</div>'; return; }
+  if (selected?.id !== profile.id) return;
+  noMoreOlder = data.length < 300; msgs = data.reverse(); renderMessages(); markRead(profile.id);
+}
+async function markRead(peerId) {
+  if (document.visibilityState !== "visible") return;
+  const had = unread.get(peerId) || msgs.some(m => m.sender_id === peerId && m.status !== "read");
+  unread.set(peerId, 0); renderConversations();
+  if (!had) return;
+  const now = new Date().toISOString();
+  const { error } = await supabase.from("messages").update({ status: "read", read_at: now }).eq("sender_id", peerId).eq("recipient_id", me.id).neq("status", "read");
+  if (error) console.error(error);
+}
+document.addEventListener("visibilitychange", () => { if (document.visibilityState === "visible" && selected) markRead(selected.id); });
+
+function onInsert(m) {
+  const peer = m.sender_id === me.id ? m.recipient_id : m.sender_id;
+  lastByConv.set(peer, m);
+  const open = selected?.id === peer;
+  if (open && !msgs.some(x => x.id === m.id)) { msgs.push(m); upsertMessageNode(m, m.sender_id === me.id); }
+  if (m.recipient_id === me.id && m.type !== "call") {
+    if (open && document.visibilityState === "visible") markRead(peer);
+    else {
+      unread.set(peer, (unread.get(peer) || 0) + 1);
+      supabase.from("messages").update({ status: "delivered", delivered_at: new Date().toISOString() }).eq("id", m.id).eq("status", "sent").then(() => {});
+      if (!open) { beep(); }
+      if (document.hidden && !pushActive && "Notification" in window && Notification.permission === "granted") {
+        try { new Notification(fullName(users.get(peer)), { body: preview(m).replace(/^You: /, ""), icon: users.get(peer)?.avatar_url || undefined }); } catch {}
+      }
+    }
+  }
+  renderConversations();
+}
+function onUpdate(m) {
+  const peer = m.sender_id === me.id ? m.recipient_id : m.sender_id;
+  if (lastByConv.get(peer)?.id === m.id) lastByConv.set(peer, { ...lastByConv.get(peer), ...m });
+  if (selected?.id === peer && msgs.some(x => x.id === m.id)) { mergeLocal(m); upsertMessageNode(msgs.find(x => x.id === m.id)); }
+  renderConversations();
+}
+async function sendMessageTo(peerId, p) {
+  const row = { conversation_id: conversationId(me.id, peerId), sender_id: me.id, recipient_id: peerId, type: "text", text: "", ...p };
+  const { data, error } = await supabase.from("messages").insert(row).select().single();
+  if (error) throw error;
+  lastByConv.set(peerId, data);
+  if (selected?.id === peerId && !msgs.some(m => m.id === data.id)) { msgs.push(data); upsertMessageNode(data, true); }
+  renderConversations();
+  return data;
+}
+async function sendMessage(p) {
+  if (!selected) return;
+  try { return await sendMessageTo(selected.id, { ...p, reply_to: replyTo?.id || null }); }
+  catch (err) { toast("Message not sent: " + friendlyError(err)); }
+  finally { clearReply(); }
+}
+function setReply(m) { replyTo = m; $("replyText").textContent = "↩ " + snippet(m).slice(0, 90); $("replyBar").classList.remove("hide"); $("messageInput").focus(); }
+function clearReply() { replyTo = null; $("replyBar").classList.add("hide"); }
+$("replyCancel").addEventListener("click", clearReply);
+async function react(m, emoji) {
+  const r = { ...(m.reactions || {}) };
+  if (r[me.id] === emoji) delete r[me.id]; else r[me.id] = emoji;
+  mergeLocal({ id: m.id, reactions: r }); upsertMessageNode(msgs.find(x => x.id === m.id));
+  const { error } = await supabase.from("messages").update({ reactions: r }).eq("id", m.id);
+  if (error) toast(friendlyError(error));
+}
+async function deleteMsg(m) {
+  if (!confirm("Delete this message for everyone?")) return;
+  const { error } = await supabase.from("messages").update({ deleted: true }).eq("id", m.id);
+  if (error) toast(friendlyError(error));
+}
+
+/* ---------- composer ---------- */
+const setBusy = t => { $("busy").textContent = t || ""; $("busy").classList.toggle("hide", !t); };
+function syncComposerButtons() {
+  const has = $("messageInput").value.trim().length > 0;
+  $("sendButton").classList.toggle("hide", !has); $("micBtn").classList.toggle("hide", has);
+}
+$("messageInput").addEventListener("input", () => {
+  syncComposerButtons();
+  if (selected && Date.now() - lastTypingSent > 2000) { lastTypingSent = Date.now(); sendTyping(); }
+});
+$("sendForm").addEventListener("submit", async e => {
+  e.preventDefault();
+  const input = $("messageInput"), text = input.value.trim();
+  if (!text || !selected) return;
+  if ("Notification" in window && Notification.permission === "default") { if (VAPID_PUBLIC_KEY) enablePush(); else Notification.requestPermission().catch(() => {}); }
+  input.value = ""; syncComposerButtons();
+  const ok = await sendMessage({ type: "text", text });
+  if (!ok) { input.value = text; syncComposerButtons(); }
+  input.focus();
+});
+async function sendMedia(blob, type, meta = {}, name) {
+  if (!selected) return;
+  if (blob.size > MAX_FILE) { toast("File too large (max 50 MB)."); return; }
+  setBusy("Uploading " + (name || type) + "…");
+  try {
+    const path = `${conversationId(me.id, selected.id)}/${crypto.randomUUID()}.${extOf(blob, name)}`;
+    const { error } = await supabase.storage.from("chat-media").upload(path, blob, { contentType: baseMime(blob) || "application/octet-stream" });
+    if (error) throw error;
+    await sendMessage({ type, media_path: path, text: "", media_meta: { ...meta, name, size: blob.size, mime: baseMime(blob) } });
+  } catch (err) { toast("Upload failed: " + friendlyError(err)); }
+  finally { setBusy(""); }
+}
+async function handleFiles(files) {
+  for (const f of files) {
+    if (f.type.startsWith("image/")) {
+      let blob = f; if (f.type !== "image/gif") { try { blob = await imageToBlob(f, 1600); } catch {} }
+      await sendMedia(blob, "image", {}, f.name);
+    } else if (f.type.startsWith("video/")) await sendMedia(f, "video", {}, f.name);
+    else await sendMedia(f, "file", {}, f.name);
+  }
+}
+for (const id of ["fileMedia", "fileCam", "fileVid", "fileDoc"]) $(id).addEventListener("change", e => { const fs = [...e.target.files]; e.target.value = ""; handleFiles(fs); });
+$("fileSticker").addEventListener("change", async e => {
+  const f = e.target.files[0]; e.target.value = ""; if (!f) return;
+  try { const b = await imageToBlob(f, 512, { type: "image/webp", q: .9 }); closePops(); await sendMedia(b, "sticker", {}, "sticker.webp"); } catch (err) { toast(friendlyError(err)); }
+});
+
+/* attach / emoji popovers */
+function closePops() { $("attachPop").classList.add("hide"); $("emojiPop").classList.add("hide"); }
+$("attachBtn").addEventListener("click", e => { e.stopPropagation(); const o = $("attachPop").classList.contains("hide"); closePops(); $("attachPop").classList.toggle("hide", !o); });
+$("attachPop").addEventListener("click", e => {
+  const b = e.target.closest("button"); if (!b) return; closePops();
+  $({ media: "fileMedia", cam: "fileCam", vid: "fileVid", doc: "fileDoc" }[b.dataset.pick]).click();
+});
+const EMOJIS = Array.from("😀😃😄😁😆😅🤣😂🙂😉😊😇🥰😍🤩😘😋😛😜🤪🤗🤔🤨😐😑😶🙄😏😴😪😷🤒🤕🤢🥵🥶🥴😵🤯🤠😎🤓😕😟😮😲😳🥺😢😭😤😡🤬😱😰🙏👍👎👏🙌👋🤝💪✌️🤞👌🤙👀🫶❤️🧡💛💚💙💜🖤🤍💔💕💖🔥✨🎉🎊🎁🎂🍕🍔🍟🌍🌹☀️🌙⭐⚽🏆🎵🎶📸💯✅❌");
+const STICKERS = Array.from("😂🥰😍😎🤩😭😡🥳🤯😴🤗🙄😱🤔🙏👍👏💪🔥💯❤️💔🎉🎂🍕☕🌹⚽🏆🚀🌍🐱🐶🦁🐼🦄🌈");
+function renderEmojiGrid(kind) {
+  const g = $("emojiGrid"); g.innerHTML = ""; g.classList.toggle("st", kind === "stickers");
+  document.querySelectorAll("[data-et]").forEach(b => b.classList.toggle("active", b.dataset.et === kind));
+  if (kind === "emoji") for (const e of EMOJIS) { const b = mk("button", "", e); b.type = "button"; b.addEventListener("click", () => { const i = $("messageInput"); i.value += e; i.focus(); syncComposerButtons(); }); g.append(b); }
+  else {
+    const add = mk("button", "", "➕"); add.type = "button"; add.title = "Make a sticker from a picture"; add.addEventListener("click", () => $("fileSticker").click()); g.append(add);
+    for (const e of STICKERS) { const b = mk("button", "", e); b.type = "button"; b.addEventListener("click", () => { closePops(); sendMessage({ type: "sticker", text: e }); }); g.append(b); }
+  }
+}
+$("emojiBtn").addEventListener("click", e => { e.stopPropagation(); const o = $("emojiPop").classList.contains("hide"); closePops(); if (o) { renderEmojiGrid("emoji"); $("emojiPop").classList.remove("hide"); } });
+$("emojiPop").addEventListener("click", e => { e.stopPropagation(); const b = e.target.closest("[data-et]"); if (b) renderEmojiGrid(b.dataset.et); });
+document.addEventListener("click", e => { if (!e.target.closest(".pop")) closePops(); });
+
+/* voice notes */
+let rec = null;
+function stopRecTimer() { if (rec) clearInterval(rec.timer); }
+async function startRecording() {
+  if (!selected) return;
+  if (!navigator.mediaDevices?.getUserMedia || !window.MediaRecorder) { toast("Voice recording is not supported in this browser."); return; }
+  let stream; try { stream = await navigator.mediaDevices.getUserMedia({ audio: true }); } catch { toast("Please allow microphone access."); return; }
+  const mime = ["audio/webm;codecs=opus", "audio/webm", "audio/mp4", "audio/ogg"].find(t => MediaRecorder.isTypeSupported?.(t));
+  const mr = new MediaRecorder(stream, mime ? { mimeType: mime } : undefined), chunks = [];
+  const r = rec = { mr, stream, start: Date.now(), cancel: false, peer: selected.id };
+  mr.ondataavailable = e => { if (e.data.size) chunks.push(e.data); };
+  mr.onstop = async () => {
+    stream.getTracks().forEach(t => t.stop()); clearInterval(r.timer);
+    $("recBar").classList.add("hide"); $("messageInput").classList.remove("hide"); $("micBtn").textContent = "🎤"; $("attachBtn").classList.remove("hide"); $("emojiBtn").classList.remove("hide");
+    if (rec === r) rec = null;
+    if (r.cancel) return;
+    const duration = (Date.now() - r.start) / 1000;
+    if (duration < .7) { toast("Hold on a little longer to record."); return; }
+    if (selected?.id !== r.peer) { toast("Voice note discarded (chat changed)."); return; }
+    await sendMedia(new Blob(chunks, { type: mr.mimeType || "audio/webm" }), "audio", { duration }, "voice");
+  };
+  mr.start();
+  $("messageInput").classList.add("hide"); $("recBar").classList.remove("hide"); $("micBtn").textContent = "➤"; $("attachBtn").classList.add("hide"); $("emojiBtn").classList.add("hide");
+  r.timer = setInterval(() => { const s = (Date.now() - r.start) / 1000; $("recTime").textContent = fmtDur(s); if (s > 300) mr.stop(); }, 250);
+}
+$("micBtn").addEventListener("click", () => { if (rec) rec.mr.stop(); else startRecording(); });
+$("recCancel").addEventListener("click", () => { if (rec) { rec.cancel = true; rec.mr.stop(); } });
+
+/* ---------- realtime: presence, typing (private), call signals (authenticated table) ---------- */
+let rtWarned = false;
+function rtStatus(name) {
+  return s => { if ((s === "CHANNEL_ERROR" || s === "TIMED_OUT") && !rtWarned) { rtWarned = true; console.error("Realtime channel problem:", name, s); toast("Live status is unavailable. Re-run supabase-setup.sql and turn off public Realtime access."); } };
+}
+function startRealtime() {
+  channels.msgs = supabase.channel("messages-feed")
+    .on("postgres_changes", { event: "INSERT", schema: "public", table: "messages" }, p => onInsert(p.new))
+    .on("postgres_changes", { event: "UPDATE", schema: "public", table: "messages" }, p => onUpdate(p.new))
+    .subscribe();
+  channels.profiles = supabase.channel("profiles-feed")
+    .on("postgres_changes", { event: "INSERT", schema: "public", table: "profiles" }, p => { users.set(p.new.id, p.new); tab === "people" && renderPeople(); })
+    .on("postgres_changes", { event: "UPDATE", schema: "public", table: "profiles" }, p => { users.set(p.new.id, { ...users.get(p.new.id), ...p.new }); if (selected?.id === p.new.id) updateChatHeader(); tab === "people" ? renderPeople() : renderConversations(); })
+    .subscribe();
+  channels.presence = supabase.channel("online", { config: { private: true, presence: { key: me.id } } })
+    .on("presence", { event: "sync" }, () => { online = new Set(Object.keys(channels.presence.presenceState())); updateChatHeader(); tab === "people" ? renderPeople() : renderConversations(); })
+    .on("presence", { event: "leave" }, ({ key }) => { const u = users.get(key); if (u) u.last_seen = new Date().toISOString(); })
+    .subscribe(async s => { rtStatus("online")(s); if (s === "SUBSCRIBED") await channels.presence.track({ at: Date.now() }); });
+  channels.signals = supabase.channel("signals-" + me.id)
+    .on("postgres_changes", { event: "INSERT", schema: "public", table: "call_signals", filter: `to_id=eq.${me.id}` }, p => onSignal(p.new))
+    .subscribe();
+  supabase.from("call_signals").delete().eq("to_id", me.id).lt("created_at", new Date(Date.now() - 120000).toISOString()).then(() => {});
+  const beat = () => supabase.from("profiles").update({ last_seen: new Date().toISOString() }).eq("id", me.id).then(() => {});
+  beat(); heartbeat = setInterval(beat, 180000);
+  window.addEventListener("pagehide", beat);
+}
+function stopRealtime() {
+  for (const k of Object.keys(channels)) { supabase.removeChannel(channels[k]); delete channels[k]; }
+  clearInterval(heartbeat);
+}
+function joinChatChannel(cid) {
+  if (channels.chat) { supabase.removeChannel(channels.chat); channels.chat = null; }
+  channels.chat = supabase.channel("chat-" + cid, { config: { private: true, broadcast: { self: false } } })
+    .on("broadcast", { event: "typing" }, ({ payload }) => {
+      if (payload?.from !== selected?.id) return;
+      typingUntil.set(payload.from, Date.now() + 3000); updateChatHeader(); renderConversations();
+      setTimeout(() => { updateChatHeader(); renderConversations(); }, 3100);
+    })
+    .subscribe(rtStatus("chat"));
+}
+function sendTyping() { try { channels.chat?.send({ type: "broadcast", event: "typing", payload: { from: me.id } }); } catch {} }
+async function signal(id, kind, payload = {}) {
+  const { error } = await supabase.from("call_signals").insert({ from_id: me.id, to_id: id, kind, payload });
+  if (error) console.error("signal", error);
+}
+function onSignal(s) {
+  supabase.from("call_signals").delete().eq("id", s.id).then(() => {});
+  const p = { ...(s.payload || {}), from: s.from_id };
+  ({ offer: onOffer, answer: onAnswer, ice: onIce, end: onRemoteEnd, reject: onReject })[s.kind]?.(p);
+}
+
+/* ---------- voice & video calls (WebRTC) ---------- */
+let call = null, ringTimer = null;
+function ring(kind) { stopRing(); const f = () => { beep(kind === "in" ? 660 : 440, .35, .08); }; f(); ringTimer = setInterval(f, 1800); }
+function stopRing() { clearInterval(ringTimer); ringTimer = null; }
+function setupPc() {
+  const c = call, pc = new RTCPeerConnection(ICE_CONFIG); c.pc = pc;
+  c.local.getTracks().forEach(t => pc.addTrack(t, c.local));
+  pc.ontrack = e => { $("remoteVideo").srcObject = e.streams[0]; };
+  pc.onicecandidate = e => { if (e.candidate) signal(c.peerId, "ice", { candidate: e.candidate }); };
+  pc.onconnectionstatechange = () => {
+    const s = pc.connectionState;
+    if (s === "connected") callConnected(c);
+    else if (s === "failed") endCall("ended");
+    else if (s === "disconnected") setTimeout(() => { if (call === c && pc.connectionState === "disconnected") endCall("ended"); }, 8000);
+  };
+}
+function showCallUI(status) {
+  const p = users.get(call.peerId);
+  $("incoming").classList.add("hide"); $("callUI").classList.remove("hide");
+  $("callName").textContent = fullName(p); $("callAvatar").replaceChildren(avatar(p));
+  $("callStatus").textContent = status;
+  $("localVideo").srcObject = call.local; $("localVideo").classList.toggle("hide", !call.video);
+  $("camBtn").classList.toggle("hide", !call.video);
+  $("muteBtn").textContent = "🎤"; $("camBtn").textContent = "📷";
+}
+function callConnected(c) {
+  if (call !== c || c.startedAt) return;
+  c.startedAt = Date.now(); stopRing(); clearTimeout(c.timeout);
+  $("callAvatar").classList.toggle("hide", c.video);
+  c.timer = setInterval(() => { $("callStatus").textContent = fmtDur((Date.now() - c.startedAt) / 1000); }, 500);
+}
+async function getMedia(video) {
+  if (!window.RTCPeerConnection || !navigator.mediaDevices?.getUserMedia) { toast("Calls are not supported here (HTTPS required)."); return null; }
+  try { return await navigator.mediaDevices.getUserMedia({ audio: true, video: video ? { facingMode: "user" } : false }); }
+  catch { toast("Allow microphone" + (video ? " and camera" : "") + " to make calls."); return null; }
+}
+async function startCall(video) {
+  if (call || !selected) return;
+  const local = await getMedia(video); if (!local) return;
+  const c = call = { peerId: selected.id, video, local, queued: [], outgoing: true };
+  setupPc(); showCallUI("Calling…"); ring("out");
+  try {
+    const offer = await c.pc.createOffer(); await c.pc.setLocalDescription(offer);
+    await signal(c.peerId, "offer", { video, sdp: offer });
+    c.timeout = setTimeout(() => { if (call === c && !c.startedAt) endCall("missed"); }, 45000);
+  } catch (e) { console.error(e); endCall("missed"); }
+}
+function onOffer(p) {
+  if (call) { signal(p.from, "reject", { busy: true }); return; }
+  if (!users.get(p.from)) return;
+  const c = call = { peerId: p.from, video: p.video, offer: p.sdp, queued: [], incoming: true };
+  const u = users.get(p.from);
+  $("inAvatar").replaceChildren(avatar(u)); $("inName").textContent = fullName(u);
+  $("inKind").textContent = p.video ? "Incoming video call…" : "Incoming voice call…";
+  $("incoming").classList.remove("hide"); ring("in");
+  c.timeout = setTimeout(() => { if (call === c && !c.pc) { signal(c.peerId, "reject", {}); cleanupCall(); } }, 45000);
+}
+$("acceptBtn").addEventListener("click", async () => {
+  const c = call; if (!c || !c.incoming) return;
+  stopRing(); clearTimeout(c.timeout);
+  const local = await getMedia(c.video);
+  if (!local) { signal(c.peerId, "reject", {}); cleanupCall(); return; }
+  c.local = local; setupPc(); showCallUI("Connecting…");
+  try {
+    await c.pc.setRemoteDescription(c.offer);
+    for (const q of c.queued) c.pc.addIceCandidate(q).catch(() => {}); c.queued = [];
+    const ans = await c.pc.createAnswer(); await c.pc.setLocalDescription(ans);
+    signal(c.peerId, "answer", { sdp: ans });
+  } catch (e) { console.error(e); endCall("ended"); }
+});
+$("declineBtn").addEventListener("click", () => { if (call) { signal(call.peerId, "reject", {}); cleanupCall(); } });
+async function onAnswer(p) {
+  const c = call; if (!c || c.peerId !== p.from || !c.outgoing || c.pc.remoteDescription) return;
+  try {
+    await c.pc.setRemoteDescription(p.sdp);
+    for (const q of c.queued) c.pc.addIceCandidate(q).catch(() => {}); c.queued = [];
+    $("callStatus").textContent = "Connecting…"; stopRing();
+  } catch (e) { console.error(e); }
+}
+function onIce(p) {
+  const c = call; if (!c || c.peerId !== p.from) return;
+  if (c.pc?.remoteDescription) c.pc.addIceCandidate(p.candidate).catch(() => {}); else c.queued.push(p.candidate);
+}
+function onRemoteEnd(p) { if (call && call.peerId === p.from) endCall("missed", true); }
+function onReject(p) { if (call && call.peerId === p.from && call.outgoing) endCall(p.busy ? "declined" : "declined", true); }
+function cleanupCall() {
+  const c = call; call = null; stopRing();
+  if (c) { clearTimeout(c.timeout); clearInterval(c.timer); try { c.pc?.close(); } catch {} c.local?.getTracks().forEach(t => t.stop()); }
+  $("callUI").classList.add("hide"); $("incoming").classList.add("hide");
+  $("remoteVideo").srcObject = null; $("localVideo").srcObject = null; $("callAvatar").classList.remove("hide");
+  return c;
+}
+function endCall(status, remote = false) {
+  const c = call; if (!c) return;
+  const duration = c.startedAt ? Math.round((Date.now() - c.startedAt) / 1000) : 0;
+  cleanupCall();
+  if (!remote) signal(c.peerId, "end", {});
+  if (c.outgoing) sendMessageTo(c.peerId, { type: "call", text: "", media_meta: { video: c.video, duration, status: c.startedAt ? "ended" : status } }).catch(() => {});
+}
+$("hangBtn").addEventListener("click", () => endCall("missed"));
+$("muteBtn").addEventListener("click", () => { const t = call?.local?.getAudioTracks()[0]; if (!t) return; t.enabled = !t.enabled; $("muteBtn").textContent = t.enabled ? "🎤" : "🔇"; });
+$("camBtn").addEventListener("click", () => { const t = call?.local?.getVideoTracks()[0]; if (!t) return; t.enabled = !t.enabled; $("camBtn").textContent = t.enabled ? "📷" : "🚫"; });
+$("voiceCallBtn").addEventListener("click", () => startCall(false));
+$("videoCallBtn").addEventListener("click", () => startCall(true));
+
+/* ---------- profile ---------- */
+async function ensureProfile(user) {
+  let { data } = await supabase.from("profiles").select(PROFILE_COLS).eq("id", user.id).maybeSingle();
+  if (!data) {
+    const md = user.user_metadata || {};
+    const row = { id: user.id, email: user.email, first_name: md.first_name || "", last_name: md.last_name || "", country: md.country || "" };
+    await supabase.from("profiles").upsert(row);
+    if (md.phone) await supabase.from("private_info").upsert({ user_id: user.id, phone: md.phone });
+    data = row;
+  }
+  return data;
+}
+function refreshMeUI() {
+  $("meAvatar").replaceChildren(avatar(myProfile)); $("meName").textContent = fullName(myProfile);
+}
+async function openProfile() {
+  $("pFirst").value = myProfile.first_name || ""; $("pLast").value = myProfile.last_name || ""; $("pCountry").value = myProfile.country || ""; $("pBio").value = myProfile.bio || ""; $("pErr").textContent = "";
+  $("profAvatar").replaceChildren(avatar(myProfile, 96));
+  const { data } = await supabase.from("private_info").select("phone").eq("user_id", me.id).maybeSingle(); $("pPhone").value = data?.phone || "";
+  $("profileModal").classList.remove("hide");
+}
+$("meAvatar").addEventListener("click", openProfile); $("meBtn").addEventListener("click", openProfile);
+$("pClose").addEventListener("click", () => $("profileModal").classList.add("hide"));
+$("avatarBtn").addEventListener("click", () => $("avatarFile").click());
+$("avatarFile").addEventListener("change", async e => {
+  const f = e.target.files[0]; e.target.value = ""; if (!f) return;
+  $("pErr").textContent = "Uploading photo…";
+  try {
+    const blob = await imageToBlob(f, 512, { square: true, q: .85 });
+    const path = `${me.id}/avatar.jpg`;
+    const { error } = await supabase.storage.from("avatars").upload(path, blob, { contentType: "image/jpeg", upsert: true });
+    if (error) throw error;
+    const url = supabase.storage.from("avatars").getPublicUrl(path).data.publicUrl + "?v=" + Date.now();
+    const { error: e2 } = await supabase.from("profiles").update({ avatar_url: url }).eq("id", me.id);
+    if (e2) throw e2;
+    myProfile.avatar_url = url; users.set(me.id, myProfile); refreshMeUI(); $("profAvatar").replaceChildren(avatar(myProfile, 96)); $("pErr").textContent = "";
+  } catch (err) { $("pErr").textContent = friendlyError(err); }
+});
+$("pSave").addEventListener("click", async () => {
+  const upd = { first_name: $("pFirst").value.trim(), last_name: $("pLast").value.trim(), country: $("pCountry").value.trim(), bio: $("pBio").value.trim() };
+  if (!upd.first_name) { $("pErr").textContent = "First name is required."; return; }
+  const { error } = await supabase.from("profiles").update(upd).eq("id", me.id);
+  if (error) { $("pErr").textContent = friendlyError(error); return; }
+  const ph = $("pPhone").value.trim();
+  if (ph) { const { error: e2 } = await supabase.from("private_info").upsert({ user_id: me.id, phone: ph }); if (e2) { $("pErr").textContent = friendlyError(e2); return; } }
+  Object.assign(myProfile, upd); users.set(me.id, myProfile); refreshMeUI(); $("profileModal").classList.add("hide"); toast("Profile saved ✓");
+});
+
+/* ---------- shorts (short videos) ---------- */
+let shortsMuted = true, shortsData = [], myLikes = new Set(), shortObserver = null, commentShort = null, pendingShort = null;
+$("shortsMute").addEventListener("click", () => { shortsMuted = !shortsMuted; $("shortsMute").textContent = shortsMuted ? "🔇" : "🔊"; document.querySelectorAll("#feed video").forEach(v => v.muted = shortsMuted); });
+$("shortsRefresh").addEventListener("click", loadShorts);
+async function loadShorts() {
+  const feed = $("feed"); if (!shortsData.length) feed.innerHTML = '<div class="shorts-empty">Loading…</div>';
+  const { data, error } = await supabase.from("shorts")
+    .select("id,user_id,video_path,video_url,caption,created_at,profiles(first_name,last_name,avatar_url),shorts_likes(count),shorts_comments(count)")
+    .order("created_at", { ascending: false }).limit(30);
+  if (error) { feed.innerHTML = '<div class="shorts-empty">Could not load Shorts. Did you run supabase-setup.sql?</div>'; console.error(error); return; }
+  const l = await supabase.from("shorts_likes").select("short_id").eq("user_id", me.id);
+  myLikes = new Set((l.data || []).map(x => x.short_id)); shortsData = data; renderShorts();
+}
+function renderShorts() {
+  const feed = $("feed"); feed.innerHTML = ""; shortObserver?.disconnect();
+  if (!shortsData.length) { feed.innerHTML = '<div class="shorts-empty"><h2>🎬 No videos yet</h2><p>Be the first to post a short video!</p></div>'; return; }
+  shortObserver = new IntersectionObserver(es => es.forEach(en => {
+    const v = en.target.querySelector("video");
+    if (en.isIntersecting) { v.muted = shortsMuted; v.play().catch(() => {}); } else v.pause();
+  }), { root: feed, threshold: .65 });
+  for (const s of shortsData) {
+    const cnt = a => a?.[0]?.count || 0, el = mk("div", "short");
+    const v = mk("video"); v.src = s.video_url; v.loop = true; v.playsInline = true; v.muted = shortsMuted; v.preload = "metadata";
+    v.addEventListener("click", () => v.paused ? v.play() : v.pause());
+    const rail = mk("div", "rail"), name = fullName(s.profiles);
+    const mkBtn = (txt, fn, c) => { const b = mk("button", "", txt); b.type = "button"; b.addEventListener("click", fn); const w = mk("div"); w.style.cssText = "display:flex;flex-direction:column;align-items:center;gap:2px"; w.append(b); if (c != null) { const n = mk("div", "cnt", String(c)); w.append(n); w.cnt = n; } rail.append(w); return { b, n: w.cnt }; };
+    rail.append(avatar(s.profiles, 46));
+    const like = mkBtn("♥", () => toggleLike(s, like), cnt(s.shorts_likes)); if (myLikes.has(s.id)) like.b.classList.add("liked");
+    mkBtn("💬", () => openComments(s), cnt(s.shorts_comments));
+    mkBtn("↗", () => shareShort(s));
+    if (s.user_id === me.id) mkBtn("🗑", () => deleteShort(s));
+    const info = mk("div", "info"); info.append(mk("b", "", "@" + name.replace(/\s+/g, "")), mk("p", "", s.caption || ""));
+    el.append(v, mk("div", "shade"), info, rail); feed.append(el); shortObserver.observe(el);
+  }
+}
+async function toggleLike(s, ui) {
+  const liked = myLikes.has(s.id), n = (s.shorts_likes?.[0]?.count || 0) + (liked ? -1 : 1);
+  s.shorts_likes = [{ count: Math.max(0, n) }]; ui.n.textContent = String(Math.max(0, n)); ui.b.classList.toggle("liked", !liked);
+  if (liked) { myLikes.delete(s.id); await supabase.from("shorts_likes").delete().eq("short_id", s.id).eq("user_id", me.id); }
+  else { myLikes.add(s.id); await supabase.from("shorts_likes").insert({ short_id: s.id, user_id: me.id }); }
+}
+async function shareShort(s) {
+  if (navigator.share) { try { await navigator.share({ title: "NEXUS Short", text: s.caption || "Watch this video", url: s.video_url }); } catch {} }
+  else { await navigator.clipboard?.writeText(s.video_url); toast("Link copied"); }
+}
+async function deleteShort(s) {
+  if (!confirm("Delete this video?")) return;
+  await supabase.storage.from("shorts").remove([s.video_path]);
+  const { error } = await supabase.from("shorts").delete().eq("id", s.id);
+  if (error) { toast(friendlyError(error)); return; }
+  shortsData = shortsData.filter(x => x.id !== s.id); renderShorts();
+}
+async function openComments(s) {
+  commentShort = s; $("commentModal").classList.remove("hide"); await loadComments();
+}
+async function loadComments() {
+  const list = $("commentList"); list.innerHTML = "Loading…";
+  const { data, error } = await supabase.from("shorts_comments").select("id,text,created_at,user_id").eq("short_id", commentShort.id).order("created_at", { ascending: true }).limit(200);
+  list.innerHTML = ""; if (error) { list.textContent = friendlyError(error); return; }
+  if (!data.length) list.append(mk("div", "note", "No comments yet. Say something nice!"));
+  for (const c of data) { const d = mk("div", "comment"); d.append(mk("b", "", fullName(users.get(c.user_id)) + " "), document.createTextNode(c.text)); list.append(d); }
+  list.scrollTop = list.scrollHeight;
+}
+$("commentForm").addEventListener("submit", async e => {
+  e.preventDefault(); const t = $("commentInput").value.trim(); if (!t || !commentShort) return;
+  $("commentInput").value = "";
+  const { error } = await supabase.from("shorts_comments").insert({ short_id: commentShort.id, user_id: me.id, text: t });
+  if (error) { toast(friendlyError(error)); return; }
+  commentShort.shorts_comments = [{ count: (commentShort.shorts_comments?.[0]?.count || 0) + 1 }]; renderShorts(); loadComments();
+});
+$("commentClose").addEventListener("click", () => $("commentModal").classList.add("hide"));
+$("shortsNew").addEventListener("click", () => { pendingShort = null; $("shortPreview").classList.add("hide"); $("shortCaption").value = ""; $("shortErr").textContent = ""; $("shortPost").disabled = true; $("shortModal").classList.remove("hide"); });
+$("shortClose").addEventListener("click", () => { $("shortModal").classList.add("hide"); $("shortPreview").pause(); });
+$("shortPick").addEventListener("click", () => $("shortFile").click());
+$("shortRec").addEventListener("click", () => $("shortCam").click());
+for (const id of ["shortFile", "shortCam"]) $(id).addEventListener("change", e => {
+  const f = e.target.files[0]; e.target.value = ""; if (!f) return;
+  $("shortErr").textContent = "";
+  if (f.size > MAX_FILE) { $("shortErr").textContent = "Video is larger than 50 MB."; return; }
+  const url = URL.createObjectURL(f), pv = $("shortPreview");
+  pv.onloadedmetadata = () => {
+    if (pv.duration > 90) { $("shortErr").textContent = "Video is longer than 90 seconds."; pendingShort = null; $("shortPost").disabled = true; }
+    else { pendingShort = f; $("shortPost").disabled = false; }
+  };
+  pv.src = url; pv.classList.remove("hide");
+});
+$("shortPost").addEventListener("click", async () => {
+  if (!pendingShort) return; const f = pendingShort;
+  $("shortPost").disabled = true; $("shortErr").textContent = "Uploading… please wait";
+  try {
+    const path = `${me.id}/${crypto.randomUUID()}.${extOf(f, f.name)}`;
+    const { error } = await supabase.storage.from("shorts").upload(path, f, { contentType: baseMime(f) || "video/mp4" });
+    if (error) throw error;
+    const video_url = supabase.storage.from("shorts").getPublicUrl(path).data.publicUrl;
+    const { error: e2 } = await supabase.from("shorts").insert({ user_id: me.id, video_path: path, video_url, caption: $("shortCaption").value.trim() });
+    if (e2) { await supabase.storage.from("shorts").remove([path]); throw e2; }
+    $("shortModal").classList.add("hide"); $("shortPreview").pause(); toast("Posted 🎉"); await loadShorts(); $("feed").scrollTop = 0;
+  } catch (err) { $("shortErr").textContent = friendlyError(err); $("shortPost").disabled = false; }
+});
+
+/* ---------- older messages (scroll to top) ---------- */
+$("messages").addEventListener("scroll", async () => {
+  const area = $("messages");
+  if (area.scrollTop > 60 || loadingOlder || noMoreOlder || !selected || !msgs.length) return;
+  loadingOlder = true;
+  const peer = selected.id, before = msgs[0].created_at, h = area.scrollHeight;
+  const { data, error } = await supabase.from("messages").select("*").eq("conversation_id", conversationId(me.id, peer)).lt("created_at", before).order("created_at", { ascending: false }).limit(100);
+  loadingOlder = false;
+  if (error || selected?.id !== peer) return;
+  if (data.length < 100) noMoreOlder = true;
+  if (!data.length) return;
+  const older = data.reverse(); msgs = [...older, ...msgs];
+  const frag = document.createDocumentFragment();
+  for (const m of older) { const n = buildMessage(m); msgNodes.set(m.id, n); frag.append(n); }
+  area.prepend(frag); area.scrollTop = area.scrollHeight - h;
+});
+
+/* ---------- PWA install + push notifications ---------- */
+let pushActive = false, installEvt = null;
+if ("serviceWorker" in navigator) {
+  navigator.serviceWorker.register("sw.js").catch(e => console.warn("Service worker:", e));
+  navigator.serviceWorker.addEventListener("message", e => {
+    if (e.data?.type === "open-chat") { const p = users.get(e.data.peer); if (p) chooseContact(p); }
+  });
+}
+window.addEventListener("beforeinstallprompt", e => { e.preventDefault(); installEvt = e; $("installBtn").classList.remove("hide"); });
+window.addEventListener("appinstalled", () => { installEvt = null; $("installBtn").classList.add("hide"); });
+$("installBtn").addEventListener("click", async () => { if (!installEvt) return; installEvt.prompt(); await installEvt.userChoice; installEvt = null; $("installBtn").classList.add("hide"); });
+const b64ToBytes = str => { const raw = atob((str + "=".repeat((4 - str.length % 4) % 4)).replace(/-/g, "+").replace(/_/g, "/")); return Uint8Array.from(raw, c => c.charCodeAt(0)); };
+function pushSupported() { return "serviceWorker" in navigator && "PushManager" in window && "Notification" in window; }
+async function currentSub() { try { const reg = await navigator.serviceWorker.ready; return await reg.pushManager.getSubscription(); } catch { return null; } }
+async function registerSub(sub) {
+  const j = sub.toJSON();
+  const { error } = await supabase.rpc("register_push", { p_endpoint: j.endpoint, p_p256dh: j.keys.p256dh, p_auth: j.keys.auth });
+  if (error) throw error;
+}
+function refreshPushBtn() { $("pushBtn").textContent = "🔔 Notifications: " + (pushActive ? "On" : "Off"); }
+async function enablePush() {
+  if (!VAPID_PUBLIC_KEY) { toast("Push is not set up yet (VAPID_PUBLIC_KEY is empty)."); return false; }
+  if (!pushSupported()) { toast("Push is not available here. On iPhone: Share, Add to Home Screen, then open NEXUS from the home screen.", 7000); return false; }
+  if (await Notification.requestPermission() !== "granted") { toast("Notifications are blocked. Allow them in your browser settings."); return false; }
+  try {
+    const reg = await navigator.serviceWorker.ready;
+    const sub = (await reg.pushManager.getSubscription()) || await reg.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: b64ToBytes(VAPID_PUBLIC_KEY) });
+    await registerSub(sub); pushActive = true; refreshPushBtn(); return true;
+  } catch (err) { toast("Could not turn on notifications: " + friendlyError(err)); return false; }
+}
+async function disablePush(unsubscribe = true) {
+  try {
+    const sub = await currentSub(); if (!sub) return;
+    await supabase.rpc("unregister_push", { p_endpoint: sub.endpoint });
+    if (unsubscribe) await sub.unsubscribe();
+  } catch {} finally { pushActive = false; refreshPushBtn(); }
+}
+$("pushBtn").addEventListener("click", async () => { if (pushActive) await disablePush(true); else await enablePush(); });
+async function initPush() {
+  pushActive = false;
+  if (pushSupported() && VAPID_PUBLIC_KEY && Notification.permission === "granted") {
+    const sub = await currentSub();
+    if (sub) { try { await registerSub(sub); pushActive = true; } catch {} }
+  }
+  refreshPushBtn();
+}
+
+/* ---------- app start / stop ---------- */
+async function startApp(user) {
+  me = user;
+  $("authView").classList.add("hide"); $("appView").classList.remove("hide"); $("logoutBtn").classList.remove("hide"); $("footerNote").classList.add("hide");
+  $("topStatus").textContent = "Signed in • " + user.email;
+  myProfile = await ensureProfile(user);
+  const { data, error } = await supabase.from("profiles").select(PROFILE_COLS).order("created_at", { ascending: true });
+  if (error) console.error(error); else for (const p of data) users.set(p.id, p);
+  users.set(me.id, { ...users.get(me.id), ...myProfile }); myProfile = users.get(me.id);
+  refreshMeUI(); await loadRecent(); setTab("chats"); startRealtime(); initPush();
+  const wanted = new URLSearchParams(location.search).get("chat");
+  if (wanted && users.get(wanted)) chooseContact(users.get(wanted));
+}
+function stopApp() {
+  if (call) cleanupCall();
+  stopRealtime();
+  me = null; myProfile = null; selected = null; users.clear(); msgs = []; msgNodes.clear(); lastByConv.clear(); unread.clear(); online = new Set(); phoneMatches = new Map(); phoneInvites = []; phoneFound = new Map(); shortsData = [];
+  $("authView").classList.remove("hide"); $("appView").classList.add("hide"); $("appView").classList.remove("in-main"); $("logoutBtn").classList.add("hide"); $("footerNote").classList.remove("hide");
+  $("topStatus").textContent = "Secure messaging workspace";
+  $("chatName").textContent = "Choose a person"; $("chatSub").textContent = "Select a contact to start chatting"; $("chatAvatar").replaceChildren(avatar({}));
+  for (const id of ["messageInput", "attachBtn", "emojiBtn", "micBtn", "voiceCallBtn", "videoCallBtn"]) $(id).disabled = true;
+  $("messages").innerHTML = '<div class="empty"><h2>Welcome 👋</h2><p>Select a person from the list to start a private conversation.</p></div>';
+}
+$("logoutBtn").addEventListener("click", async () => {
+  if (me) await supabase.from("profiles").update({ last_seen: new Date().toISOString() }).eq("id", me.id);
+  await disablePush(false);
+  supabase.auth.signOut();
+});
+if (configured) {
+  supabase.auth.onAuthStateChange((event, session) => {
+    setTimeout(() => {
+      if (event === "PASSWORD_RECOVERY") $("recModal").classList.remove("hide");
+      if (session?.user) { if (me?.id !== session.user.id) startApp(session.user).catch(err => { console.error(err); showError(friendlyError(err)); }); }
+      else if (me) stopApp();
+    }, 0);
+  });
+}
+</script>
+</body>
+</html>
